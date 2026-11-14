@@ -168,7 +168,7 @@ actor ConversationParser {
                     events.append(event)
                 }
 
-            case .devin:
+            case .devin, .gemini:
                 continue
             }
         }

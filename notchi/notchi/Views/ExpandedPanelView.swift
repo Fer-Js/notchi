@@ -171,6 +171,7 @@ struct ExpandedPanelView: View {
     let usageService: ClaudeUsageService
     let codexUsageService: CodexUsageService
     let devinUsageService: DevinUsageService
+    let geminiUsageService: GeminiUsageService
     let usageDetailProvider: AgentProvider?
     @Binding var showingSettings: Bool
     @Binding var settingsPath: [SettingsScreen]
@@ -196,6 +197,7 @@ struct ExpandedPanelView: View {
         usageService: ClaudeUsageService,
         codexUsageService: CodexUsageService,
         devinUsageService: DevinUsageService,
+        geminiUsageService: GeminiUsageService = .shared,
         usageDetailProvider: AgentProvider?,
         showingSettings: Binding<Bool>,
         settingsPath: Binding<[SettingsScreen]>,
@@ -208,6 +210,7 @@ struct ExpandedPanelView: View {
         self.usageService = usageService
         self.codexUsageService = codexUsageService
         self.devinUsageService = devinUsageService
+        self.geminiUsageService = geminiUsageService
         self.usageDetailProvider = usageDetailProvider
         _showingSettings = showingSettings
         _settingsPath = settingsPath
@@ -247,8 +250,9 @@ struct ExpandedPanelView: View {
 
     private var hasUsageDetailData: Bool {
         usageService.hasUsageData || codexUsageService.hasUsageData || devinUsageService.hasUsageData
+            || geminiUsageService.hasUsageData
             || !CostHistoryStore.shared.buckets.isEmpty || !CostHistoryStore.sharedCodex.buckets.isEmpty
-            || !CostHistoryStore.sharedDevin.buckets.isEmpty
+            || !CostHistoryStore.sharedDevin.buckets.isEmpty || !CostHistoryStore.sharedGemini.buckets.isEmpty
     }
 
     private var state: NotchiState {
@@ -316,6 +320,7 @@ struct ExpandedPanelView: View {
         let includesClaude = Self.includesClaudeUsage(activeSessions: activeSessions)
         let includesCodex = Self.includesCodexUsage(activeSessions: activeSessions)
         let includesDevin = Self.includesDevinUsage(activeSessions: activeSessions)
+        let includesGemini = Self.includesGeminiUsage(activeSessions: activeSessions)
         let period = mainUsageBarPeriod
 
         let claudePeriod = Self.effectiveMainUsagePeriod(
@@ -385,11 +390,34 @@ struct ExpandedPanelView: View {
             period: devinPeriod
         ) : nil
 
+        let geminiPeriod = Self.effectiveMainUsagePeriod(
+            for: period,
+            sessionUsage: geminiUsageService.currentUsage,
+            weeklyUsage: geminiUsageService.currentWeeklyUsage
+        )
+        let gemini = includesGemini ? SharedUsageBarState(
+            provider: .gemini,
+            usage: Self.mainUsage(
+                for: geminiPeriod,
+                sessionUsage: geminiUsageService.currentUsage,
+                weeklyUsage: geminiUsageService.currentWeeklyUsage
+            ),
+            isUsingExtraUsage: false,
+            isLoading: false,
+            error: nil,
+            statusMessage: nil,
+            isStale: geminiUsageService.isUsageStale,
+            recoveryAction: .none,
+            lastObservedAt: geminiUsageService.lastObservedAt,
+            period: geminiPeriod
+        ) : nil
+
         return Self.sharedUsageBarState(
             contextSession: usageContextSession,
             claude: claude,
             codex: codex,
             devin: devin,
+            gemini: gemini,
             lastUsedProvider: AppSettings.lastUsedAgentProvider
         )
     }
@@ -542,9 +570,11 @@ struct ExpandedPanelView: View {
                 claudeUsage: usageService,
                 codexUsage: codexUsageService,
                 devinUsage: devinUsageService,
+                geminiUsage: geminiUsageService,
                 costStore: CostHistoryStore.shared,
                 codexCostStore: CostHistoryStore.sharedCodex,
                 devinCostStore: CostHistoryStore.sharedDevin,
+                geminiCostStore: CostHistoryStore.sharedGemini,
                 defaultProvider: usageDetailDefaultProvider
             )
             .padding(.horizontal, 12)
@@ -633,13 +663,23 @@ struct ExpandedPanelView: View {
         activeSessions.contains { $0.provider == .devin }
     }
 
+    static func includesGeminiUsage(activeSessions: [SessionData]) -> Bool {
+        activeSessions.contains { $0.provider == .gemini }
+    }
+
     static func hasMixedProviderSessions(_ activeSessions: [SessionData]) -> Bool {
         Set(activeSessions.map(\.provider)).count > 1
     }
 
     static func questionResponseHint(for session: SessionData?) -> String? {
-        guard session?.provider == .codex else { return nil }
-        return String(localized: "Reply directly in the Codex app or CLI")
+        switch session?.provider {
+        case .codex:
+            return String(localized: "Reply directly in the Codex app or CLI")
+        case .gemini:
+            return String(localized: "Reply directly in Gemini CLI")
+        default:
+            return nil
+        }
     }
 
     static func sharedUsageResetLabelPrefix(
@@ -720,10 +760,11 @@ struct ExpandedPanelView: View {
         claude: SharedUsageBarState?,
         codex: SharedUsageBarState?,
         devin: SharedUsageBarState? = nil,
+        gemini: SharedUsageBarState? = nil,
         lastUsedProvider: AgentProvider = .claude,
         claudeUsageEnabled: Bool = AppSettings.isUsageEnabled
     ) -> SharedUsageBarState? {
-        let candidates = [claude, codex, devin].compactMap { $0 }
+        let candidates = [claude, codex, devin, gemini].compactMap { $0 }
         guard candidates.count > 1 else {
             return candidates.first
         }

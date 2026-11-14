@@ -54,7 +54,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate, SP
         observePanelExpansionChanges()
         observeWakeNotifications()
         startProviderServices()
-        startUpdater()
+        // Custom Gemini-enabled build: keep Sparkle inactive so upstream updates don't overwrite customizations.
     }
 
     // WHY: launch preparation and hook installation can run shell probes with
@@ -71,9 +71,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate, SP
             await ClaudeUsageService.shared.startPolling()
             await CodexUsageService.shared.startPolling()
             await DevinUsageService.shared.startPolling()
+            await GeminiUsageService.shared.startPolling()
             await CostHistoryStore.shared.start()
             await CostHistoryStore.sharedCodex.start()
             await CostHistoryStore.sharedDevin.start()
+            await CostHistoryStore.sharedGemini.start()
         }
     }
 
@@ -88,6 +90,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate, SP
         ClaudeUsageService.shared.stopPolling()
         CodexUsageService.shared.stopPolling()
         DevinUsageService.shared.stopPolling()
+        GeminiUsageService.shared.stopPolling()
     }
 
     @MainActor private func setupNotchWindow() {
@@ -205,6 +208,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, SPUUpdaterDelegate, SP
             ClaudeUsageService.shared.startPolling(afterSystemWake: true)
             Task { await CodexUsageService.shared.refreshFromAPI() }
             Task { await DevinUsageService.shared.refresh() }
+            Task { await GeminiUsageService.shared.refresh() }
         }
     }
 

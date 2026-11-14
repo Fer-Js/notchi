@@ -33,6 +33,19 @@ nonisolated enum CostPricing {
         return s
     }
 
+    static func normalizeGeminiModel(_ raw: String) -> String {
+        var s = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        if let slash = s.lastIndex(of: "/") { s = String(s[s.index(after: slash)...]) }
+        if let r = s.range(of: #"-(preview|latest|\d{4}-\d{2}-\d{2}|\d{3})$"#, options: .regularExpression) {
+            s.removeSubrange(r)
+        }
+        return s
+    }
+
+    static func isGeminiModel(_ raw: String) -> Bool {
+        normalizeGeminiModel(raw).lowercased().hasPrefix("gemini")
+    }
+
     static func claudeCostUSD(
         model: String, input: Int, cacheRead: Int, cacheCreation: Int,
         cacheCreation1h: Int, output: Int, pricing: ClaudeModelPricing) -> Double?

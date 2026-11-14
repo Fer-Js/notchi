@@ -32,7 +32,8 @@ enum PanelUsageBadgeState: Equatable {
         hasActiveClaudeSession: Bool,
         hasActiveCodexSession: Bool,
         codexHooksInstalled: Bool,
-        hasActiveDevinSessionWithUsage: Bool = false
+        hasActiveDevinSessionWithUsage: Bool = false,
+        hasActiveGeminiSessionWithUsage: Bool = false
     ) -> PanelUsageBadgeState {
         if isClaudeUsageConnected {
             return .connected
@@ -46,7 +47,7 @@ enum PanelUsageBadgeState: Equatable {
             return .connected
         }
 
-        if hasActiveDevinSessionWithUsage {
+        if hasActiveDevinSessionWithUsage || hasActiveGeminiSessionWithUsage {
             return .connected
         }
 
@@ -60,9 +61,11 @@ struct PanelSettingsView: View {
     @State private var claudeHooksStatus = IntegrationCoordinator.shared.installStatus(for: .claude)
     @State private var codexHooksStatus = IntegrationCoordinator.shared.installStatus(for: .codex)
     @State private var devinHooksStatus = IntegrationCoordinator.shared.installStatus(for: .devin)
+    @State private var geminiHooksStatus = IntegrationCoordinator.shared.installStatus(for: .gemini)
     @State private var claudeHooksEnabled = AppSettings.areHooksEnabled(for: .claude)
     @State private var codexHooksEnabled = AppSettings.areHooksEnabled(for: .codex)
     @State private var devinHooksEnabled = AppSettings.areHooksEnabled(for: .devin)
+    @State private var geminiHooksEnabled = AppSettings.areHooksEnabled(for: .gemini)
     @State private var areHooksExpanded = false
     @State private var codexSetup: CodexHookSetup?
     @State private var isCheckingCodex = false
@@ -202,6 +205,7 @@ struct PanelSettingsView: View {
                 )
             }
             hookProviderRow(for: .devin, status: devinHooksStatus)
+            hookProviderRow(for: .gemini, status: geminiHooksStatus)
         }
         .padding(.vertical, SettingsLayout.pickerInset)
         .background(TerminalColors.subtleBackground)
@@ -281,6 +285,7 @@ struct PanelSettingsView: View {
             (claudeHooksStatus, "Claude Code"),
             (codexHooksStatus, "Codex"),
             (devinHooksStatus, "Devin"),
+            (geminiHooksStatus, "Gemini"),
         ]
         .filter { $0.0 != .providerUnavailable }
         .map(\.1)
@@ -405,7 +410,7 @@ struct PanelSettingsView: View {
     }
 
     private func availableHookStates() -> [AgentHookInstallStatus] {
-        [claudeHooksStatus, codexHooksStatus, devinHooksStatus].filter { status in
+        [claudeHooksStatus, codexHooksStatus, devinHooksStatus, geminiHooksStatus].filter { status in
             status != .providerUnavailable
         }
     }
@@ -481,7 +486,9 @@ struct PanelSettingsView: View {
             hasActiveCodexSession: sessions.contains { $0.provider == .codex },
             codexHooksInstalled: codexHooksStatus == .installed,
             hasActiveDevinSessionWithUsage: sessions.contains { $0.provider == .devin }
-                && DevinUsageService.shared.hasUsageData
+                && DevinUsageService.shared.hasUsageData,
+            hasActiveGeminiSessionWithUsage: sessions.contains { $0.provider == .gemini }
+                && GeminiUsageService.shared.hasUsageData
         )
         return StatusBadge(text: state.text, color: state.color)
     }
@@ -494,6 +501,8 @@ struct PanelSettingsView: View {
             codexHooksEnabled
         case .devin:
             devinHooksEnabled
+        case .gemini:
+            geminiHooksEnabled
         }
     }
 
@@ -516,6 +525,9 @@ struct PanelSettingsView: View {
         case .devin:
             devinHooksEnabled = enabled
             devinHooksStatus = status
+        case .gemini:
+            geminiHooksEnabled = enabled
+            geminiHooksStatus = status
         }
     }
 
@@ -523,9 +535,11 @@ struct PanelSettingsView: View {
         claudeHooksStatus = IntegrationCoordinator.shared.installStatus(for: .claude)
         codexHooksStatus = IntegrationCoordinator.shared.installStatus(for: .codex)
         devinHooksStatus = IntegrationCoordinator.shared.installStatus(for: .devin)
+        geminiHooksStatus = IntegrationCoordinator.shared.installStatus(for: .gemini)
         claudeHooksEnabled = AppSettings.areHooksEnabled(for: .claude)
         codexHooksEnabled = AppSettings.areHooksEnabled(for: .codex)
         devinHooksEnabled = AppSettings.areHooksEnabled(for: .devin)
+        geminiHooksEnabled = AppSettings.areHooksEnabled(for: .gemini)
         codexCheckRevision += 1
     }
 

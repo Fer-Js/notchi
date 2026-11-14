@@ -741,7 +741,7 @@ struct QuestionPromptView: View {
     }
 
     private var shouldRenderDisplayOnlyRowsHighlighted: Bool {
-        provider == .codex
+        provider == .codex || provider == .gemini
     }
 }
 

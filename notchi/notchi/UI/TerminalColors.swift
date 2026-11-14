@@ -10,6 +10,8 @@ struct TerminalColors {
     static let codexAccentDeep = Color(red: 0.25, green: 0.28, blue: 0.72)
     static let devinAccent = Color(red: 0.96, green: 0.8, blue: 0.26)
     static let devinAccentDeep = Color(red: 0.8, green: 0.62, blue: 0.1)
+    static let geminiAccent = Color(red: 0.29, green: 0.56, blue: 0.98)
+    static let geminiAccentDeep = Color(red: 0.16, green: 0.38, blue: 0.82)
 
     static let claudeChartShades = [
         claudeOrangeDeep,
@@ -25,6 +27,11 @@ struct TerminalColors {
         devinAccentDeep,
         devinAccent,
         Color(red: 0.99, green: 0.9, blue: 0.58),
+    ]
+    static let geminiChartShades = [
+        geminiAccentDeep,
+        geminiAccent,
+        Color(red: 0.55, green: 0.76, blue: 1.0),
     ]
     static let iMessageBlue = Color(red: 0, green: 0.478, blue: 1)
     static let planMode = Color(red: 72.0 / 255.0, green: 150.0 / 255.0, blue: 140.0 / 255.0)
@@ -58,6 +65,8 @@ extension AgentProvider {
             TerminalColors.codexAccent
         case .devin:
             TerminalColors.devinAccent
+        case .gemini:
+            TerminalColors.geminiAccent
         }
     }
 
@@ -69,6 +78,8 @@ extension AgentProvider {
             TerminalColors.codexAccentDeep
         case .devin:
             TerminalColors.devinAccentDeep
+        case .gemini:
+            TerminalColors.geminiAccentDeep
         }
     }
 }

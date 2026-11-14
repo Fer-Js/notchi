@@ -115,6 +115,7 @@ enum NotchiSpriteFamily: String {
     case claude
     case codex
     case devin
+    case gemini
 }
 
 struct SpriteSheetPresentation: Equatable {
@@ -131,6 +132,8 @@ extension AgentProvider {
             .codex
         case .devin:
             .devin
+        case .gemini:
+            .gemini
         }
     }
 }
@@ -249,7 +252,9 @@ struct NotchiState: Equatable {
              (.codex, .idle, .happy),
              (.codex, .working, .happy),
              (.devin, .idle, .elated),
-             (.devin, .idle, .happy):
+             (.devin, .idle, .happy),
+             (.gemini, .idle, .elated),
+             (.gemini, .idle, .happy):
             return Self.expressiveSpriteTargetFPS
         default:
             return nil

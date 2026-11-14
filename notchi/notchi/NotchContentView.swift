@@ -167,6 +167,7 @@ struct NotchContentView: View {
     var usageService: ClaudeUsageService = .shared
     var codexUsageService: CodexUsageService = .shared
     var devinUsageService: DevinUsageService = .shared
+    var geminiUsageService: GeminiUsageService = .shared
     var haptics: HapticService = .shared
     @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
     @ObservedObject private var updateManager = UpdateManager.shared
@@ -245,6 +246,7 @@ struct NotchContentView: View {
         case .claude: sessionStore.latestSession(for: .claude)
         case .codex: sessionStore.latestSession(for: .codex)
         case .devin: sessionStore.latestSession(for: .devin)
+        case .gemini: sessionStore.latestSession(for: .gemini)
         case .latest: sessionStore.latestSession(excluding: excluded)
         case .nothing, .ring: nil
         }
@@ -259,6 +261,7 @@ struct NotchContentView: View {
         case .claude: spriteFamily == AgentProvider.claude.spriteFamily
         case .codex: spriteFamily == AgentProvider.codex.spriteFamily
         case .devin: spriteFamily == AgentProvider.devin.spriteFamily
+        case .gemini: spriteFamily == AgentProvider.gemini.spriteFamily
         case .latest: spriteFamily != excluded?.spriteFamily
         case .nothing, .ring: false
         }
@@ -440,6 +443,7 @@ struct NotchContentView: View {
         case .claude: usageService.isUsageStale
         case .codex: codexUsageService.isUsageStale
         case .devin: devinUsageService.isUsageStale
+        case .gemini: geminiUsageService.isUsageStale
         }
     }
 
@@ -449,12 +453,15 @@ struct NotchContentView: View {
         codexSessionUsage: QuotaPeriod?,
         codexWeeklyUsage: QuotaPeriod?,
         devinDailyUsage: QuotaPeriod? = nil,
-        devinWeeklyUsage: QuotaPeriod? = nil
+        devinWeeklyUsage: QuotaPeriod? = nil,
+        geminiSessionUsage: QuotaPeriod? = nil,
+        geminiWeeklyUsage: QuotaPeriod? = nil
     ) -> QuotaPeriod? {
         switch provider {
         case .claude: claudeUsage
         case .codex: codexSessionUsage ?? codexWeeklyUsage
         case .devin: devinDailyUsage ?? devinWeeklyUsage
+        case .gemini: geminiSessionUsage ?? geminiWeeklyUsage
         }
     }
 
@@ -465,7 +472,9 @@ struct NotchContentView: View {
         codexSessionUsage: QuotaPeriod?,
         codexWeeklyUsage: QuotaPeriod?,
         devinDailyUsage: QuotaPeriod? = nil,
-        devinWeeklyUsage: QuotaPeriod? = nil
+        devinWeeklyUsage: QuotaPeriod? = nil,
+        geminiSessionUsage: QuotaPeriod? = nil,
+        geminiWeeklyUsage: QuotaPeriod? = nil
     ) -> Int? {
         guard isUsageEnabled else { return nil }
         return collapsedRingUsage(
@@ -474,7 +483,9 @@ struct NotchContentView: View {
             codexSessionUsage: codexSessionUsage,
             codexWeeklyUsage: codexWeeklyUsage,
             devinDailyUsage: devinDailyUsage,
-            devinWeeklyUsage: devinWeeklyUsage
+            devinWeeklyUsage: devinWeeklyUsage,
+            geminiSessionUsage: geminiSessionUsage,
+            geminiWeeklyUsage: geminiWeeklyUsage
         )?.usagePercentage
     }
 
@@ -491,7 +502,9 @@ struct NotchContentView: View {
         codexWeeklyUsage: QuotaPeriod?,
         codexHasUnlimitedCredits: Bool,
         devinDailyUsage: QuotaPeriod? = nil,
-        devinWeeklyUsage: QuotaPeriod? = nil
+        devinWeeklyUsage: QuotaPeriod? = nil,
+        geminiSessionUsage: QuotaPeriod? = nil,
+        geminiWeeklyUsage: QuotaPeriod? = nil
     ) -> CollapsedRingContent? {
         guard isUsageEnabled else { return nil }
         if let percentage = collapsedRingPercentage(
@@ -501,7 +514,9 @@ struct NotchContentView: View {
             codexSessionUsage: codexSessionUsage,
             codexWeeklyUsage: codexWeeklyUsage,
             devinDailyUsage: devinDailyUsage,
-            devinWeeklyUsage: devinWeeklyUsage
+            devinWeeklyUsage: devinWeeklyUsage,
+            geminiSessionUsage: geminiSessionUsage,
+            geminiWeeklyUsage: geminiWeeklyUsage
         ) {
             return .percentage(percentage)
         }
@@ -518,7 +533,9 @@ struct NotchContentView: View {
             codexWeeklyUsage: codexUsageService.currentWeeklyUsage,
             codexHasUnlimitedCredits: codexUsageService.hasUnlimitedCredits,
             devinDailyUsage: devinUsageService.currentUsage,
-            devinWeeklyUsage: devinUsageService.currentWeeklyUsage
+            devinWeeklyUsage: devinUsageService.currentWeeklyUsage,
+            geminiSessionUsage: geminiUsageService.currentUsage,
+            geminiWeeklyUsage: geminiUsageService.currentWeeklyUsage
         )
     }
 
@@ -727,6 +744,7 @@ struct NotchContentView: View {
                         usageService: usageService,
                         codexUsageService: CodexUsageService.shared,
                         devinUsageService: DevinUsageService.shared,
+                        geminiUsageService: geminiUsageService,
                         usageDetailProvider: usageDetailProvider,
                         showingSettings: $showingPanelSettings,
                         settingsPath: $settingsPath,
@@ -877,7 +895,7 @@ struct NotchContentView: View {
             Color.clear.frame(width: sideWidth)
         case .ring:
             ringSlot(side: side)
-        case .latest, .claude, .codex, .devin:
+        case .latest, .claude, .codex, .devin, .gemini:
             spriteSlot(content: spriteContent(for: content, side: side), side: side)
                 .simultaneousGesture(collapsedSpriteGesture(for: content, side: side))
         }

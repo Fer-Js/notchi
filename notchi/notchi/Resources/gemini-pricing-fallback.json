@@ -1,0 +1,63 @@
+{
+  "version": 1,
+  "models": {
+    "gemini-2.5-pro": {
+      "inputPerToken": 0.00000125,
+      "outputPerToken": 0.00001,
+      "cacheCreationPerToken": 0,
+      "cacheReadPerToken": 0.0000003125,
+      "thresholdTokens": 200000,
+      "inputPerTokenAboveThreshold": 0.0000025,
+      "outputPerTokenAboveThreshold": 0.000015,
+      "cacheCreationPerTokenAboveThreshold": 0,
+      "cacheReadPerTokenAboveThreshold": 0.000000625
+    },
+    "gemini-2.5-flash": {
+      "inputPerToken": 0.0000003,
+      "outputPerToken": 0.0000025,
+      "cacheCreationPerToken": 0,
+      "cacheReadPerToken": 0.000000075
+    },
+    "gemini-2.5-flash-lite": {
+      "inputPerToken": 0.0000001,
+      "outputPerToken": 0.0000004,
+      "cacheCreationPerToken": 0,
+      "cacheReadPerToken": 0.000000025
+    },
+    "gemini-3-pro": {
+      "inputPerToken": 0.000002,
+      "outputPerToken": 0.000012,
+      "cacheCreationPerToken": 0,
+      "cacheReadPerToken": 0.0000005
+    },
+    "gemini-3-flash": {
+      "inputPerToken": 0.0000005,
+      "outputPerToken": 0.000003,
+      "cacheCreationPerToken": 0,
+      "cacheReadPerToken": 0.000000125
+    },
+    "gemini-4-hydrogen": {
+      "inputPerToken": 0.000002,
+      "outputPerToken": 0.000012,
+      "cacheCreationPerToken": 0,
+      "cacheReadPerToken": 0.0000005,
+      "thresholdTokens": 200000,
+      "inputPerTokenAboveThreshold": 0.000004,
+      "outputPerTokenAboveThreshold": 0.000018,
+      "cacheCreationPerTokenAboveThreshold": 0,
+      "cacheReadPerTokenAboveThreshold": 0.000001
+    },
+    "gemini-4-argon": {
+      "inputPerToken": 0.0000005,
+      "outputPerToken": 0.000003,
+      "cacheCreationPerToken": 0,
+      "cacheReadPerToken": 0.000000125
+    },
+    "gemini-4-argon-wtu": {
+      "inputPerToken": 0.0000005,
+      "outputPerToken": 0.000003,
+      "cacheCreationPerToken": 0,
+      "cacheReadPerToken": 0.000000125
+    }
+  }
+}

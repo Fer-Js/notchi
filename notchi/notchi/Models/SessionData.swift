@@ -54,6 +54,7 @@ final class SessionData: Identifiable {
     private(set) var currentSpinnerVerb: String
     private(set) var claudeProcessId: Int?
     private(set) var devinProcessId: Int?
+    private(set) var geminiProcessId: Int?
     private(set) var codexProcessId: Int?
     private(set) var codexOrigin: CodexOrigin?
     private(set) var hostBundleIdentifier: String?
@@ -119,6 +120,8 @@ final class SessionData: Identifiable {
             codexProcessId
         case .devin:
             devinProcessId
+        case .gemini:
+            geminiProcessId
         }
     }
 
@@ -339,6 +342,14 @@ final class SessionData: Identifiable {
               Self.isValidProcessId(processId) else { return }
 
         devinProcessId = processId
+    }
+
+    func updateGeminiRuntime(processId: Int?) {
+        guard provider == .gemini,
+              let processId,
+              Self.isValidProcessId(processId) else { return }
+
+        geminiProcessId = processId
     }
 
     private static func isValidProcessId(_ processId: Int) -> Bool {

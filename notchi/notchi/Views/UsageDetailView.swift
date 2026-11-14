@@ -4,9 +4,11 @@ struct UsageDetailView: View {
     let claudeUsage: ClaudeUsageService
     let codexUsage: CodexUsageService
     let devinUsage: DevinUsageService
+    let geminiUsage: GeminiUsageService?
     let costStore: CostHistoryStore
     let codexCostStore: CostHistoryStore
     let devinCostStore: CostHistoryStore
+    let geminiCostStore: CostHistoryStore?
     let defaultProvider: AgentProvider
 
     enum UsageTab: Hashable {
@@ -22,17 +24,21 @@ struct UsageDetailView: View {
         claudeUsage: ClaudeUsageService,
         codexUsage: CodexUsageService,
         devinUsage: DevinUsageService,
+        geminiUsage: GeminiUsageService? = nil,
         costStore: CostHistoryStore,
         codexCostStore: CostHistoryStore,
         devinCostStore: CostHistoryStore,
+        geminiCostStore: CostHistoryStore? = nil,
         defaultProvider: AgentProvider
     ) {
         self.claudeUsage = claudeUsage
         self.codexUsage = codexUsage
         self.devinUsage = devinUsage
+        self.geminiUsage = geminiUsage
         self.costStore = costStore
         self.codexCostStore = codexCostStore
         self.devinCostStore = devinCostStore
+        self.geminiCostStore = geminiCostStore
         self.defaultProvider = defaultProvider
         _selectedTab = State(initialValue: .provider(defaultProvider))
     }
@@ -49,12 +55,29 @@ struct UsageDetailView: View {
         devinUsage.hasUsageData || !devinCostStore.buckets.isEmpty
     }
 
+    var geminiHasData: Bool {
+        (geminiUsage?.hasUsageData == true) || !(geminiCostStore?.buckets.isEmpty ?? true)
+    }
+
     private var costStoresByProvider: [(provider: AgentProvider, store: CostHistoryStore)] {
-        [(.claude, costStore), (.codex, codexCostStore), (.devin, devinCostStore)]
+        var list: [(AgentProvider, CostHistoryStore)] = [
+            (.claude, costStore),
+            (.codex, codexCostStore),
+            (.devin, devinCostStore),
+        ]
+        if let geminiCostStore {
+            list.append((.gemini, geminiCostStore))
+        }
+        return list
     }
 
     private var providersWithData: [AgentProvider] {
-        Self.providersWithData(claudeHasData: claudeHasData, codexHasData: codexHasData, devinHasData: devinHasData)
+        Self.providersWithData(
+            claudeHasData: claudeHasData,
+            codexHasData: codexHasData,
+            devinHasData: devinHasData,
+            geminiHasData: geminiHasData
+        )
     }
 
     var showsToggle: Bool {
@@ -78,14 +101,16 @@ struct UsageDetailView: View {
                 selected: defaultProvider,
                 claudeHasData: claudeHasData,
                 codexHasData: codexHasData,
-                devinHasData: devinHasData
+                devinHasData: devinHasData,
+                geminiHasData: geminiHasData
             ))
         case .provider(let provider):
             return .provider(Self.resolvedProvider(
                 selected: provider,
                 claudeHasData: claudeHasData,
                 codexHasData: codexHasData,
-                devinHasData: devinHasData
+                devinHasData: devinHasData,
+                geminiHasData: geminiHasData
             ))
         }
     }
@@ -101,17 +126,33 @@ struct UsageDetailView: View {
         selected: AgentProvider,
         claudeHasData: Bool,
         codexHasData: Bool,
-        devinHasData: Bool = false
+        devinHasData: Bool = false,
+        geminiHasData: Bool = false
     ) -> AgentProvider {
-        let withData = providersWithData(claudeHasData: claudeHasData, codexHasData: codexHasData, devinHasData: devinHasData)
+        let withData = providersWithData(
+            claudeHasData: claudeHasData,
+            codexHasData: codexHasData,
+            devinHasData: devinHasData,
+            geminiHasData: geminiHasData
+        )
         guard let firstWithData = withData.first, !withData.contains(selected) else {
             return selected
         }
         return firstWithData
     }
 
-    private static func providersWithData(claudeHasData: Bool, codexHasData: Bool, devinHasData: Bool) -> [AgentProvider] {
-        [(AgentProvider.claude, claudeHasData), (.codex, codexHasData), (.devin, devinHasData)]
+    private static func providersWithData(
+        claudeHasData: Bool,
+        codexHasData: Bool,
+        devinHasData: Bool,
+        geminiHasData: Bool = false
+    ) -> [AgentProvider] {
+        [
+            (AgentProvider.claude, claudeHasData),
+            (.codex, codexHasData),
+            (.devin, devinHasData),
+            (.gemini, geminiHasData),
+        ]
             .filter(\.1)
             .map(\.0)
     }
@@ -142,6 +183,12 @@ struct UsageDetailView: View {
                 UsageMetrics.periodDisplay(title: String(localized: "Daily"), usage: devinUsage.currentUsage, isStale: devinUsage.isUsageStale),
                 UsageMetrics.periodDisplay(title: String(localized: "Weekly"), usage: devinUsage.currentWeeklyUsage, isStale: devinUsage.isUsageStale),
             ].compactMap { $0 }
+        case .gemini:
+            let stale = geminiUsage?.isUsageStale ?? false
+            return [
+                UsageMetrics.periodDisplay(title: String(localized: "Session"), usage: geminiUsage?.currentUsage, isStale: stale),
+                UsageMetrics.periodDisplay(title: String(localized: "Weekly"), usage: geminiUsage?.currentWeeklyUsage, isStale: stale),
+            ].compactMap { $0 }
         }
     }
 
@@ -163,7 +210,7 @@ struct UsageDetailView: View {
             byAdding: .day, value: -(costStore.windowDays - 1),
             to: calendar.startOfDay(for: today))!
         return DailyCostReport.combinedAcrossProviders(
-            [(.claude, costStore.buckets), (.codex, codexCostStore.buckets), (.devin, devinCostStore.buckets)],
+            costStoresByProvider.map { (provider: CostProvider(rawValue: $0.provider.rawValue)!, buckets: $0.store.buckets) },
             windowStart: windowStart, today: today, calendar: calendar)
     }
 
@@ -302,6 +349,7 @@ struct UsageDetailView: View {
         case .claude: costStore
         case .codex: codexCostStore
         case .devin: devinCostStore
+        case .gemini: geminiCostStore ?? costStore
         }
     }
 

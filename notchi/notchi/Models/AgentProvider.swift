@@ -11,6 +11,7 @@ nonisolated enum AgentProvider: String, Codable, CaseIterable, Hashable, Sendabl
     case claude
     case codex
     case devin
+    case gemini
 
     var displayName: String {
         switch self {
@@ -20,6 +21,8 @@ nonisolated enum AgentProvider: String, Codable, CaseIterable, Hashable, Sendabl
             "Codex"
         case .devin:
             "Devin"
+        case .gemini:
+            "Gemini"
         }
     }
 
@@ -42,6 +45,13 @@ nonisolated enum AgentProvider: String, Codable, CaseIterable, Hashable, Sendabl
         case .devin:
             ProviderCapabilities(
                 supportsPermissionPrompts: false,
+                supportsUsageResumeTriggers: false,
+                supportsPromptEmotionAnalysis: true,
+                supportsDerivedTranscriptFallback: false
+            )
+        case .gemini:
+            ProviderCapabilities(
+                supportsPermissionPrompts: true,
                 supportsUsageResumeTriggers: false,
                 supportsPromptEmotionAnalysis: true,
                 supportsDerivedTranscriptFallback: false

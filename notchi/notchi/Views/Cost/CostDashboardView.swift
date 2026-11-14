@@ -15,7 +15,7 @@ enum CostStatFormatter {
     }()
 
     static func tokens(_ n: Int) -> String {
-        n.formatted(.number.notation(.compactName))
+        n.formatted(.number.notation(.compactName).locale(Locale(identifier: "en_US")))
     }
 
     static func usd(_ amount: Double) -> String {
@@ -190,6 +190,7 @@ struct CostDashboardView: View {
         case .claude: TerminalColors.claudeChartShades
         case .codex: TerminalColors.codexChartShades
         case .devin: TerminalColors.devinChartShades
+        case .gemini: TerminalColors.geminiChartShades
         }
         return shades[min(rank, shades.count - 1)]
     }
@@ -206,6 +207,7 @@ struct CostDashboardView: View {
         case .claude: TerminalColors.claudeOrangeDeep
         case .codex: TerminalColors.codexAccent
         case .devin: TerminalColors.devinAccent
+        case .gemini: TerminalColors.geminiAccent
         }
     }
 
@@ -286,6 +288,7 @@ struct CostDashboardView: View {
                 case .claude: AgentProvider.claude.displayName
                 case .codex: AgentProvider.codex.displayName
                 case .devin: AgentProvider.devin.displayName
+                case .gemini: AgentProvider.gemini.displayName
                 }
             } else if s.models.count == 1 {
                 name = CostStatFormatter.modelName(s.models[0])

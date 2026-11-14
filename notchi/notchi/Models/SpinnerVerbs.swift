@@ -11,6 +11,8 @@ enum SpinnerVerbs {
             "Codexing"
         case .devin:
             "Devining"
+        case .gemini:
+            "Geminizing"
         }
     }
 

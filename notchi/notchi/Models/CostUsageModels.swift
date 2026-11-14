@@ -4,6 +4,7 @@ nonisolated enum CostProvider: String, Codable, Sendable, CaseIterable {
     case claude
     case codex
     case devin
+    case gemini
 }
 
 nonisolated struct ModelTokenTotals: Equatable, Sendable, Codable {

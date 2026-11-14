@@ -8,7 +8,7 @@ nonisolated struct ProviderConfig: Sendable {
     let snapshotFileName: String
     var pricesUnlistedVariantsByPrefix = false
 
-    enum ModelsDevKey: Sendable { case anthropic, openai }
+    enum ModelsDevKey: Sendable { case anthropic, openai, google }
 
     static let claude = ProviderConfig(
         fallbackResource: "claude-pricing-fallback",
@@ -30,6 +30,14 @@ nonisolated struct ProviderConfig: Sendable {
         plausibilityAnchors: ["swe-1"],
         normalize: { $0 },
         snapshotFileName: "devin-pricing.json",
+        pricesUnlistedVariantsByPrefix: true)
+
+    static let gemini = ProviderConfig(
+        fallbackResource: "gemini-pricing-fallback",
+        modelsDevKey: .google,
+        plausibilityAnchors: ["gemini-2.5"],
+        normalize: CostPricing.normalizeGeminiModel,
+        snapshotFileName: "models-dev-gemini.json",
         pricesUnlistedVariantsByPrefix: true)
 }
 
@@ -82,6 +90,7 @@ nonisolated final class PricingCatalog: ClaudePricingProviding, @unchecked Senda
     private struct ModelsDev: Decodable {
         let anthropic: ModelsDev.Provider?
         let openai: ModelsDev.Provider?
+        let google: ModelsDev.Provider?
 
         struct Provider: Decodable {
             let models: [String: ModelsDev.LenientEntry]
@@ -204,6 +213,7 @@ nonisolated final class PricingCatalog: ClaudePricingProviding, @unchecked Senda
         switch config.modelsDevKey {
         case .anthropic: provider = decoded.anthropic
         case .openai: provider = decoded.openai
+        case .google: provider = decoded.google
         case nil: provider = nil
         }
         guard let provider else { return }

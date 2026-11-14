@@ -80,6 +80,12 @@ final class NotchiStateMachine {
                 if event.provider.capabilities.supportsUsageResumeTriggers {
                     handleClaudeUsageResumeTrigger(.sessionStart)
                 }
+                if event.provider == .gemini {
+                    if let modelId = event.modelId {
+                        GeminiUsageService.shared.setActiveModelId(modelId)
+                    }
+                    Task { await GeminiUsageService.shared.refresh() }
+                }
             }
 
             return
@@ -128,6 +134,13 @@ final class NotchiStateMachine {
                 handleClaudeUsageResumeTrigger(.userPromptSubmit)
             }
 
+            if event.provider == .gemini {
+                if let modelId = event.modelId {
+                    GeminiUsageService.shared.setActiveModelId(modelId)
+                }
+                Task { await GeminiUsageService.shared.refresh() }
+            }
+
         case .preToolUse:
             if isDone {
                 SoundService.shared.playNotificationSound(sessionKey: event.sessionKey, isInteractive: session.isInteractive)
@@ -158,6 +171,12 @@ final class NotchiStateMachine {
             if event.provider.capabilities.supportsUsageResumeTriggers {
                 handleClaudeUsageResumeTrigger(.sessionStart)
             }
+            if event.provider == .gemini {
+                if let modelId = event.modelId {
+                    GeminiUsageService.shared.setActiveModelId(modelId)
+                }
+                Task { await GeminiUsageService.shared.refresh() }
+            }
 
         case .stop:
             SoundService.shared.playNotificationSound(sessionKey: event.sessionKey, isInteractive: session.isInteractive)
@@ -173,6 +192,13 @@ final class NotchiStateMachine {
             }
             if event.provider == .devin {
                 Task { await DevinUsageService.shared.refresh() }
+            }
+            if event.provider == .gemini {
+                if let modelId = event.modelId {
+                    GeminiUsageService.shared.setActiveModelId(modelId)
+                }
+                Task { await GeminiUsageService.shared.refresh() }
+                Task { await CostHistoryStore.sharedGemini.refresh() }
             }
 
         case .sessionEnded:

@@ -512,7 +512,7 @@ final class NotchContentViewTests: XCTestCase {
 
     func testShortPickerIsUnconstrainedSoItDoesNotReserveEmptySpace() {
         XCTAssertNil(
-            SettingsLayout.pickerViewportHeight(rowCount: NotchSlotContent.allCases.count, scale: 1)
+            SettingsLayout.pickerViewportHeight(rowCount: 3, scale: 1)
         )
         XCTAssertNil(
             SettingsLayout.pickerViewportHeight(rowCount: SettingsLayout.pickerMaxVisibleRows, scale: 1)

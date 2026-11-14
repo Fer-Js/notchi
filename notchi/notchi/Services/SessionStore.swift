@@ -181,6 +181,7 @@ final class SessionStore {
         session.updateClaudeRuntime(processId: event.claudeProcessId)
         session.updateCodexRuntime(processId: event.codexProcessId, origin: event.codexOrigin)
         session.updateDevinRuntime(processId: event.devinProcessId)
+        session.updateGeminiRuntime(processId: event.geminiProcessId)
         if event.claudeProcessId != nil, let processId = session.claudeProcessId {
             refreshClaudeSessionName(for: session, sessionKey: event.sessionKey, processId: processId)
         }

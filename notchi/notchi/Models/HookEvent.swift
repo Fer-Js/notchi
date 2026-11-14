@@ -46,6 +46,10 @@ enum NormalizedAgentEvent: String, CaseIterable, Codable, Sendable {
             nil
         }
     }
+
+    nonisolated static func geminiEvent(named rawValue: String) -> Self? {
+        Self(rawValue: rawValue)
+    }
 }
 
 enum CodexOrigin: String, Codable, Sendable {
@@ -71,6 +75,8 @@ struct AgentHookEnvelope: Decodable, Sendable {
     let codexProcessId: Int?
     let codexOrigin: CodexOrigin?
     let devinProcessId: Int?
+    let geminiProcessId: Int?
+    let modelId: String?
     let hasAttachments: Bool?
     let lastAssistantMessage: String?
 
@@ -89,6 +95,8 @@ struct AgentHookEnvelope: Decodable, Sendable {
         case codexProcessId = "codex_process_id"
         case codexOrigin = "codex_origin"
         case devinProcessId = "devin_process_id"
+        case geminiProcessId = "gemini_process_id"
+        case modelId = "model"
         case hasAttachments = "has_attachments"
         case lastAssistantMessage = "last_assistant_message"
     }
@@ -113,6 +121,8 @@ struct AgentHookEnvelope: Decodable, Sendable {
         codexProcessId = try container.decodeIfPresent(Int.self, forKey: .codexProcessId)
         codexOrigin = try container.decodeIfPresent(CodexOrigin.self, forKey: .codexOrigin)
         devinProcessId = try container.decodeIfPresent(Int.self, forKey: .devinProcessId)
+        geminiProcessId = try container.decodeIfPresent(Int.self, forKey: .geminiProcessId)
+        modelId = try container.decodeIfPresent(String.self, forKey: .modelId)
         hasAttachments = try container.decodeIfPresent(Bool.self, forKey: .hasAttachments)
         lastAssistantMessage = try container.decodeIfPresent(String.self, forKey: .lastAssistantMessage)
     }
@@ -139,6 +149,8 @@ struct HookEvent: Sendable {
     let codexProcessId: Int?
     let codexOrigin: CodexOrigin?
     let devinProcessId: Int?
+    let geminiProcessId: Int?
+    let modelId: String?
     let lastAssistantMessage: String?
     let interactionRequestId: String?
 
@@ -171,6 +183,8 @@ struct HookEvent: Sendable {
         codexProcessId: Int? = nil,
         codexOrigin: CodexOrigin? = nil,
         devinProcessId: Int? = nil,
+        geminiProcessId: Int? = nil,
+        modelId: String? = nil,
         lastAssistantMessage: String? = nil,
         interactionRequestId: String? = nil
     ) {
@@ -194,6 +208,8 @@ struct HookEvent: Sendable {
         self.codexProcessId = codexProcessId
         self.codexOrigin = codexOrigin
         self.devinProcessId = devinProcessId
+        self.geminiProcessId = geminiProcessId
+        self.modelId = modelId
         self.lastAssistantMessage = lastAssistantMessage
         self.interactionRequestId = interactionRequestId
     }

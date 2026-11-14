@@ -65,6 +65,16 @@ final class CostHistoryStore {
             let scanner = DevinCostScanner(databaseURL: databaseURL, pricing: pricing,
                                            windowDays: windowDays, calendar: calendar)
             return { scanner.scan(cache: $0, now: $1) }
+        case .gemini:
+            let scanner = CodexCostScanner(
+                projectsRoots: projectsRoots,
+                pricing: pricing,
+                windowDays: windowDays,
+                calendar: calendar,
+                normalizeModel: CostPricing.normalizeGeminiModel,
+                modelFilter: CostPricing.isGeminiModel
+            )
+            return { scanner.scan(cache: $0, now: $1) }
         }
     }
 
@@ -156,6 +166,11 @@ extension CostHistoryStore {
         provider: .devin, config: .devin,
         projectsRoots: [homeURL(".local/share/devin/cli")],
         cacheFile: "devin.json")
+
+    static let sharedGemini = makeStore(
+        provider: .gemini, config: .gemini,
+        projectsRoots: [homeURL(".gemini/antigravity-cli/notchi-sessions")],
+        cacheFile: "gemini.json")
 
     private static func homeURL(_ sub: String) -> URL {
         URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent(sub, isDirectory: true)

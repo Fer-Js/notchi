@@ -5,12 +5,23 @@ nonisolated final class CodexCostScanner {
     let pricing: any ClaudePricingProviding
     let windowDays: Int
     let calendar: Calendar
+    let normalizeModel: @Sendable (String) -> String
+    let modelFilter: @Sendable (String) -> Bool
 
-    nonisolated init(projectsRoots: [URL], pricing: any ClaudePricingProviding, windowDays: Int, calendar: Calendar) {
+    nonisolated init(
+        projectsRoots: [URL],
+        pricing: any ClaudePricingProviding,
+        windowDays: Int,
+        calendar: Calendar,
+        normalizeModel: @escaping @Sendable (String) -> String = CostPricing.normalizeOpenAIModel,
+        modelFilter: @escaping @Sendable (String) -> Bool = { _ in true }
+    ) {
         self.projectsRoots = projectsRoots
         self.pricing = pricing
         self.windowDays = windowDays
         self.calendar = calendar
+        self.normalizeModel = normalizeModel
+        self.modelFilter = modelFilter
     }
 
     nonisolated deinit {}
@@ -166,7 +177,8 @@ nonisolated final class CodexCostScanner {
         if delta.input == 0, delta.cached == 0, delta.output == 0 { return }
 
         let rawModel = currentModel ?? "gpt-5"
-        let normalizedModel = CostPricing.normalizeOpenAIModel(rawModel)
+        guard modelFilter(rawModel) else { return }
+        let normalizedModel = normalizeModel(rawModel)
         let cached = min(delta.cached, delta.input)
         let mappedInput = delta.input - cached
         let mappedCacheRead = cached
